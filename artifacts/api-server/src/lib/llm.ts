@@ -12,42 +12,52 @@ type InvestigationContext = {
 export async function refineInvestigationSummary(
   context: InvestigationContext,
 ): Promise<string | undefined> {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return undefined;
 
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+      {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        "x-goog-api-key": apiKey,
       },
       body: JSON.stringify({
-        model: "gpt-5-mini",
-        max_completion_tokens: 500,
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are SafeNest, a cautious facility safety assistant. Rewrite the supplied summary in two concise sentences for a facility manager. Use only the supplied evidence. Never claim that an incident will or will not happen, never give a guarantee, and explicitly frame the result as a recommendation for qualified human review.",
-          },
+        contents: [
           {
             role: "user",
-            content: JSON.stringify(context),
+            parts: [
+              {
+                text: `You are SafeNest, a cautious facility safety assistant. Rewrite the supplied summary in two concise sentences for a facility manager. Use only the supplied evidence. Never claim that an incident will or will not happen, never give a guarantee, and explicitly frame the result as a recommendation for qualified human review.\n\n${JSON.stringify(context)}`,
+              },
+            ],
           },
         ],
+        generationConfig: {
+          maxOutputTokens: 8192,
+        },
       }),
-    });
+      },
+    );
     if (!response.ok) {
-      logger.warn({ status: response.status }, "OpenAI summary request failed");
+      logger.warn({ status: response.status }, "Gemini summary request failed");
       return undefined;
     }
     const payload = (await response.json()) as {
-      choices?: Array<{ message?: { content?: string | null } }>;
+      candidates?: Array<{
+        content?: { parts?: Array<{ text?: string | null }> };
+      }>;
     };
-    return payload.choices?.[0]?.message?.content?.trim() || undefined;
+    return (
+      payload.candidates?.[0]?.content?.parts
+        ?.map((part) => part.text ?? "")
+        .join("")
+        .trim() || undefined
+    );
   } catch (error) {
-    logger.warn({ err: error }, "OpenAI summary request unavailable");
+    logger.warn({ err: error }, "Gemini summary request unavailable");
     return undefined;
   }
 }

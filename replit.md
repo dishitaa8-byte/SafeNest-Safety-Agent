@@ -11,7 +11,7 @@ SafeNest correlates facility appliance telemetry, maintenance history, and human
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL` — managed PostgreSQL connection string
-- Optional env: `OPENAI_API_KEY` — enables concise LLM-refined investigation summaries; the local risk engine remains the source of truth
+- Optional env: `GEMINI_API_KEY` — enables concise Gemini-refined investigation summaries; the local risk engine remains the source of truth
 
 ## Stack
 
