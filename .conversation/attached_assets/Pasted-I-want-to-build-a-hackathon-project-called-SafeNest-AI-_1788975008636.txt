@@ -1,0 +1,70 @@
+I want to build a hackathon project called **SafeNest — AI Facility Safety & Preventive Maintenance Agent**.
+
+Before writing any code, analyze the requirements below and create a clear implementation plan.
+
+## Problem
+
+Facilities such as hostels, schools, offices, apartments, hotels, and small organizations have many electrical appliances. Warning signs of appliance failure can be scattered across sensor readings, maintenance history, and human incident reports.
+
+SafeNest should use an AI agent to investigate these signals, correlate evidence, assess appliance risk, prioritize maintenance, and recommend or initiate appropriate actions.
+
+The project is inspired by a real hostel incident where an old fan was running slowly, an MCB tripped, a burning smell was noticed, and the fan later caught fire. The goal is NOT to claim that AI can guarantee fire prevention. The system should identify abnormal patterns and escalate potentially dangerous equipment for human intervention.
+
+## Initial MVP
+
+The application should contain:
+
+1. A facility dashboard showing appliance health and risk.
+2. Simulated appliance sensor data.
+3. Appliance maintenance history.
+4. Human incident/user reports.
+5. An AI agent capable of investigating an appliance.
+6. Agent tools for retrieving sensor data, maintenance history, and incident reports.
+7. Risk classification:
+
+   * LOW
+   * MEDIUM
+   * HIGH
+   * CRITICAL
+8. Recommended actions.
+9. Maintenance ticket creation.
+10. Human approval before consequential actions.
+11. A conversational interface where a facility manager can ask questions such as:
+
+* "Which appliances need urgent attention?"
+* "Why is Fan-104 considered critical?"
+* "Show me appliances that should be replaced rather than repaired."
+
+## Technical preferences
+
+Use a lightweight architecture suitable for a hackathon.
+
+Preferred stack:
+
+* Python
+* Flask
+* SQLite
+* HTML/CSS/JavaScript
+* An LLM API
+* An agent framework that supports tool calling
+
+Do NOT introduce unnecessary cloud infrastructure, microservices, Docker, Kubernetes, IoT hardware, or complicated databases.
+
+The application should be easy to run and deploy.
+
+For now, DO NOT write the implementation.
+
+First provide:
+
+1. Proposed architecture
+2. Folder structure
+3. Database/data model
+4. Agent architecture
+5. Agent tools
+6. API endpoints
+7. Frontend pages/components
+8. Example user workflow
+9. Development phases
+10. Potential technical risks
+
+Wait for my approval before implementing.

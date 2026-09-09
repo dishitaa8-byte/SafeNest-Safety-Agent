@@ -1,15 +1,17 @@
-# [Project name]
+# SafeNest
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+SafeNest correlates facility appliance telemetry, maintenance history, and human reports to prioritize safety risk and route recommended maintenance through human approval.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server
+- `pnpm --filter @workspace/safenest run dev` — run the web dashboard
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Required env: `DATABASE_URL` — managed PostgreSQL connection string
+- Optional env: `OPENAI_API_KEY` — enables concise LLM-refined investigation summaries; the local risk engine remains the source of truth
 
 ## Stack
 
@@ -22,23 +24,30 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `lib/api-spec/openapi.yaml` — source of truth for SafeNest API contracts
+- `lib/db/src/schema/safenest.ts` — Drizzle schema for appliances, telemetry, maintenance, incidents, tickets, and audit events
+- `artifacts/api-server/src/lib/safenest.ts` — seeded demo data and deterministic risk engine
+- `artifacts/api-server/src/routes/safenest.ts` — dashboard, investigation, reports, tickets, and chat routes
+- `artifacts/safenest/src/App.tsx` — dashboard frontend and route shell
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Risk categories are driven by deterministic rules with safety overrides; the LLM can only refine wording.
+- Ticket creation produces an approval request; the agent cannot approve or execute consequential work.
+- Demo data is seeded once with Fan-104 as the multi-signal critical scenario.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Facility managers can scan appliance risk, inspect sensor and maintenance evidence, submit incident reports, investigate equipment with the safety assistant, and approve or reject maintenance tickets.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+No additional preferences recorded.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Run API codegen after changing `lib/api-spec/openapi.yaml`.
+- Run `pnpm run typecheck` after changing shared schema or API code.
 
 ## Pointers
 

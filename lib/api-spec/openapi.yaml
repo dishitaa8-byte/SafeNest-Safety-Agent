@@ -3,13 +3,23 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: SafeNest facility safety and preventive maintenance API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: dashboard
+    description: Facility overview operations
+  - name: appliances
+    description: Appliance health and investigation operations
+  - name: incidents
+    description: Human incident reports
+  - name: tickets
+    description: Approval-gated maintenance tickets
+  - name: chat
+    description: Facility manager assistant
 paths:
   /healthz:
     get:
@@ -24,7 +34,273 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get facility dashboard summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+  /appliances:
+    get:
+      operationId: listAppliances
+      tags: [appliances]
+      summary: List appliances
+      parameters:
+        - name: risk_level
+          in: query
+          schema:
+            type: string
+            enum: [LOW, MEDIUM, HIGH, CRITICAL]
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: location
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Appliance list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Appliance"
+  /appliances/{assetCode}:
+    get:
+      operationId: getAppliance
+      tags: [appliances]
+      summary: Get an appliance
+      parameters:
+        - $ref: "#/components/parameters/AssetCode"
+      responses:
+        "200":
+          description: Appliance detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Appliance"
+        "404":
+          description: Appliance not found
+  /appliances/{assetCode}/sensors:
+    get:
+      operationId: getApplianceSensors
+      tags: [appliances]
+      summary: Get recent sensor readings
+      parameters:
+        - $ref: "#/components/parameters/AssetCode"
+      responses:
+        "200":
+          description: Sensor readings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SensorReadingsResponse"
+  /appliances/{assetCode}/maintenance:
+    get:
+      operationId: getApplianceMaintenance
+      tags: [appliances]
+      summary: Get appliance maintenance history
+      parameters:
+        - $ref: "#/components/parameters/AssetCode"
+      responses:
+        "200":
+          description: Maintenance history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MaintenanceRecord"
+  /appliances/{assetCode}/incidents:
+    get:
+      operationId: getApplianceIncidents
+      tags: [appliances]
+      summary: Get appliance incident reports
+      parameters:
+        - $ref: "#/components/parameters/AssetCode"
+      responses:
+        "200":
+          description: Incident reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/IncidentReport"
+  /appliances/{assetCode}/investigate:
+    post:
+      operationId: investigateAppliance
+      tags: [appliances]
+      summary: Investigate an appliance with the safety agent
+      parameters:
+        - $ref: "#/components/parameters/AssetCode"
+      responses:
+        "200":
+          description: Structured investigation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Investigation"
+  /incidents:
+    get:
+      operationId: listIncidents
+      tags: [incidents]
+      summary: List incident reports
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [OPEN, REVIEWED, RESOLVED]
+        - name: severity
+          in: query
+          schema:
+            type: string
+            enum: [INFORMATIONAL, CONCERNING, URGENT]
+      responses:
+        "200":
+          description: Incident report list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/IncidentReport"
+    post:
+      operationId: createIncident
+      tags: [incidents]
+      summary: Create an incident report
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IncidentInput"
+      responses:
+        "201":
+          description: Created incident report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IncidentReport"
+  /tickets:
+    get:
+      operationId: listTickets
+      tags: [tickets]
+      summary: List maintenance tickets
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [DRAFT, AWAITING_APPROVAL, APPROVED, REJECTED, COMPLETED]
+      responses:
+        "200":
+          description: Maintenance ticket list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MaintenanceTicket"
+    post:
+      operationId: createTicket
+      tags: [tickets]
+      summary: Draft a maintenance ticket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TicketInput"
+      responses:
+        "201":
+          description: Draft maintenance ticket
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaintenanceTicket"
+  /tickets/{ticketId}/approve:
+    post:
+      operationId: approveTicket
+      tags: [tickets]
+      summary: Approve a maintenance ticket
+      parameters:
+        - $ref: "#/components/parameters/TicketId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApprovalInput"
+      responses:
+        "200":
+          description: Approved maintenance ticket
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaintenanceTicket"
+  /tickets/{ticketId}/reject:
+    post:
+      operationId: rejectTicket
+      tags: [tickets]
+      summary: Reject a maintenance ticket
+      parameters:
+        - $ref: "#/components/parameters/TicketId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApprovalInput"
+      responses:
+        "200":
+          description: Rejected maintenance ticket
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaintenanceTicket"
+  /chat:
+    post:
+      operationId: sendChatMessage
+      tags: [chat]
+      summary: Ask the facility safety assistant a question
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatInput"
+      responses:
+        "200":
+          description: Assistant response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatResponse"
 components:
+  parameters:
+    AssetCode:
+      name: assetCode
+      in: path
+      required: true
+      schema:
+        type: string
+    TicketId:
+      name: ticketId
+      in: path
+      required: true
+      schema:
+        type: integer
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +309,201 @@ components:
           type: string
       required:
         - status
+    RiskLevel:
+      type: string
+      enum: [LOW, MEDIUM, HIGH, CRITICAL]
+    IncidentSeverity:
+      type: string
+      enum: [INFORMATIONAL, CONCERNING, URGENT]
+    IncidentStatus:
+      type: string
+      enum: [OPEN, REVIEWED, RESOLVED]
+    Appliance:
+      type: object
+      required:
+        - id
+        - asset_code
+        - name
+        - category
+        - location
+        - age_years
+        - status
+        - risk_level
+        - risk_score
+        - last_assessed_at
+        - open_incidents
+      properties:
+        id:
+          type: integer
+        asset_code:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+        location:
+          type: string
+        age_years:
+          type: number
+        status:
+          type: string
+        risk_level:
+          $ref: "#/components/schemas/RiskLevel"
+        risk_score:
+          type: integer
+        last_assessed_at:
+          type: string
+        open_incidents:
+          type: integer
+    SensorReading:
+      type: object
+      required: [timestamp, temperature_c, current_amps, voltage, power_watts, speed_rpm, vibration_level, mcb_trip_detected, burning_smell_reported]
+      properties:
+        timestamp: { type: string }
+        temperature_c: { type: number }
+        current_amps: { type: number }
+        voltage: { type: number }
+        power_watts: { type: number }
+        speed_rpm: { type: number }
+        vibration_level: { type: number }
+        mcb_trip_detected: { type: boolean }
+        burning_smell_reported: { type: boolean }
+    SensorReadingsResponse:
+      type: object
+      required: [readings, baseline, anomalies]
+      properties:
+        readings:
+          type: array
+          items: { $ref: "#/components/schemas/SensorReading" }
+        baseline:
+          type: object
+          additionalProperties: true
+        anomalies:
+          type: array
+          items: { type: string }
+    MaintenanceRecord:
+      type: object
+      required: [id, date, maintenance_type, description, outcome]
+      properties:
+        id: { type: integer }
+        date: { type: string }
+        maintenance_type: { type: string }
+        description: { type: string }
+        cost: { type: ["number", "null"] }
+        technician: { type: ["string", "null"] }
+        outcome: { type: string }
+    IncidentReport:
+      type: object
+      required: [id, appliance_asset_code, reported_by, created_at, description, severity, status]
+      properties:
+        id: { type: integer }
+        appliance_asset_code: { type: string }
+        reported_by: { type: string }
+        created_at: { type: string }
+        description: { type: string }
+        severity: { $ref: "#/components/schemas/IncidentSeverity" }
+        status: { $ref: "#/components/schemas/IncidentStatus" }
+    DashboardSummary:
+      type: object
+      required: [total_appliances, counts_by_risk, critical_appliances, pending_approvals, recent_incidents]
+      properties:
+        total_appliances: { type: integer }
+        counts_by_risk:
+          type: object
+          required: [LOW, MEDIUM, HIGH, CRITICAL]
+          properties:
+            LOW: { type: integer }
+            MEDIUM: { type: integer }
+            HIGH: { type: integer }
+            CRITICAL: { type: integer }
+        critical_appliances:
+          type: array
+          items: { $ref: "#/components/schemas/Appliance" }
+        pending_approvals: { type: integer }
+        recent_incidents:
+          type: array
+          items: { $ref: "#/components/schemas/IncidentReport" }
+    EvidenceItem:
+      type: object
+      required: [source, text, severity]
+      properties:
+        source: { type: string }
+        text: { type: string }
+        severity: { type: string }
+    Investigation:
+      type: object
+      required: [appliance, risk_level, risk_score, summary, evidence, recommended_actions, requires_human_approval, limitations]
+      properties:
+        appliance: { $ref: "#/components/schemas/Appliance" }
+        risk_level: { $ref: "#/components/schemas/RiskLevel" }
+        risk_score: { type: integer }
+        summary: { type: string }
+        evidence:
+          type: array
+          items: { $ref: "#/components/schemas/EvidenceItem" }
+        recommended_actions:
+          type: array
+          items: { type: string }
+        requires_human_approval: { type: boolean }
+        limitations:
+          type: array
+          items: { type: string }
+    MaintenanceTicket:
+      type: object
+      required: [id, appliance_asset_code, title, description, priority, recommended_action, status, created_by, created_at]
+      properties:
+        id: { type: integer }
+        appliance_asset_code: { type: string }
+        title: { type: string }
+        description: { type: string }
+        priority: { $ref: "#/components/schemas/RiskLevel" }
+        recommended_action: { type: string }
+        status: { type: string, enum: [DRAFT, AWAITING_APPROVAL, APPROVED, REJECTED, COMPLETED] }
+        created_by: { type: string }
+        approved_by: { type: ["string", "null"] }
+        created_at: { type: string }
+        approved_at: { type: ["string", "null"] }
+    IncidentInput:
+      type: object
+      required: [appliance_asset_code, reported_by, description, severity]
+      properties:
+        appliance_asset_code: { type: string }
+        reported_by: { type: string }
+        description: { type: string, minLength: 3 }
+        severity: { $ref: "#/components/schemas/IncidentSeverity" }
+    TicketInput:
+      type: object
+      required: [appliance_asset_code, title, description, priority, recommended_action]
+      properties:
+        appliance_asset_code: { type: string }
+        title: { type: string, minLength: 3 }
+        description: { type: string, minLength: 3 }
+        priority: { $ref: "#/components/schemas/RiskLevel" }
+        recommended_action: { type: string }
+    ApprovalInput:
+      type: object
+      required: [approved_by]
+      properties:
+        approved_by: { type: string, minLength: 1 }
+    ChatInput:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string, minLength: 2 }
+    ChatResponse:
+      type: object
+      required: [answer, referenced_appliances, risk_level, evidence, recommended_actions, requires_approval]
+      properties:
+        answer: { type: string }
+        referenced_appliances:
+          type: array
+          items: { type: string }
+        risk_level: { type: ["string", "null"] }
+        evidence:
+          type: array
+          items: { type: string }
+        recommended_actions:
+          type: array
+          items: { type: string }
+        requires_approval: { type: boolean }
 

@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "SafeNest"
+description = "A facility safety dashboard that correlates simulated appliance signals, maintenance history, and human incident reports to prioritize risk and guide managers through approval-based maintenance actions."
+version = "1.0.0"
+id = "artifacts/safenest"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22319
+
+[services.development]
+run = "pnpm --filter @workspace/safenest run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/safenest", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/safenest/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22319"
+BASE_PATH = "/"

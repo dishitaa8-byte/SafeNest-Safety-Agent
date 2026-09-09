@@ -1,0 +1,1 @@
+- [OpenAPI codegen collisions](openapi-codegen-collisions.md) — avoid path-plus-query operations when Orval would emit duplicate Params exports.
