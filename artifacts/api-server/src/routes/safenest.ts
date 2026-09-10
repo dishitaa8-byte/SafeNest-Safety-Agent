@@ -54,7 +54,7 @@ import {
   getSensorData,
   writeAuditEvent,
 } from "../lib/safenest";
-import { refineInvestigationSummary } from "../lib/llm";
+import { refineAssistantAnswer, refineInvestigationSummary } from "../lib/llm";
 
 const router: IRouter = Router();
 
@@ -501,6 +501,16 @@ router.post("/chat", async (req, res): Promise<void> => {
       } else if (message.includes("replace")) {
         answer = `Replacement candidates include ${referenced.map((item) => `${item.asset_code} (${item.age_years.toFixed(1)} years, ${item.risk_level})`).join(", ")}. Review the repair history before approving work.`;
       }
+      const llmAnswer = await refineAssistantAnswer({
+        assetCode: investigation.appliance.asset_code,
+        riskLevel: investigation.risk_level,
+        riskScore: investigation.risk_score,
+        summary: investigation.summary,
+        evidence,
+        recommendedActions: actions,
+        draftAnswer: answer,
+      });
+      if (llmAnswer) answer = llmAnswer;
     }
   }
   const response = {

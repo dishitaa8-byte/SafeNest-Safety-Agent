@@ -1,1 +1,2 @@
 - [OpenAPI codegen collisions](openapi-codegen-collisions.md) — avoid path-plus-query operations when Orval would emit duplicate Params exports.
+- [Gemini model availability](gemini-model-availability.md) — a listed Gemini model can still be unavailable to new users; handle provider 404s explicitly.
