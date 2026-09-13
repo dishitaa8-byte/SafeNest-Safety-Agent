@@ -474,14 +474,43 @@ router.post("/chat", async (req, res): Promise<void> => {
   const message = parsed.data.message.toLowerCase();
   const appliances = await listAppliances({});
   let referenced: Awaited<ReturnType<typeof listAppliances>> = [];
-  if (message.includes("urgent") || message.includes("attention") || message.includes("critical")) {
-    referenced = appliances.filter((item) => item.risk_level === "CRITICAL" || item.risk_level === "HIGH");
-  } else if (message.includes("replace")) {
-    referenced = appliances.filter((item) => item.age_years >= 5 || item.risk_level === "CRITICAL");
-  } else {
-    const match = appliances.find((item) => message.includes(item.asset_code.toLowerCase()));
-    if (match) referenced = [match];
+  const asksForAction =
+  message.includes("fix") ||
+  message.includes("what can i do") ||
+  message.includes("what should i do") ||
+  message.includes("how can i") ||
+  message.includes("resolve") ||
+  message.includes("next step") ||
+  message.includes("what now") ||
+  message.includes("action");
+
+if (
+  message.includes("urgent") ||
+  message.includes("attention") ||
+  message.includes("critical") ||
+  asksForAction
+) {
+  referenced = appliances
+    .filter(
+      (item) =>
+        item.risk_level === "CRITICAL" || item.risk_level === "HIGH",
+    )
+    .sort((a, b) => b.risk_score - a.risk_score);
+
+  // If the user asks what to do, focus on the highest-risk appliance.
+  if (asksForAction && referenced.length > 0) {
+    referenced = [referenced[0]];
   }
+} else if (message.includes("replace")) {
+  referenced = appliances.filter(
+    (item) => item.age_years >= 5 || item.risk_level === "CRITICAL",
+  );
+} else {
+  const match = appliances.find((item) =>
+    message.includes(item.asset_code.toLowerCase()),
+  );
+  if (match) referenced = [match];
+}
   const first = referenced[0];
   let answer =
     referenced.length > 0
