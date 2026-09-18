@@ -312,23 +312,6 @@ Frontend:
 https://safenest-frontend-4g0s.onrender.com
 
 
-
-## Hackathon Focus
-
-SafeNest was built around the idea of applying AI to a practical safety and maintenance problem.
-
-The project focuses on:
-
-Agentic investigation
-AI-assisted decision support
-Preventive maintenance
-Human-in-the-loop workflows
-Structured tool/data access
-Deterministic safety rules
-Explainable recommendations
-
-The objective is to demonstrate how AI can help facility teams connect scattered warning signals and prioritize human attention.
-
 ## Future Improvements
 
 Potential future versions could include:
@@ -353,11 +336,6 @@ SafeNest does not guarantee prevention of equipment failure, electrical fires, i
 
 Safety-critical decisions should always be reviewed and approved by appropriately qualified personnel.
 
-## Built For
-
-AI Builders Hackathon — 2026
-
-Built by Dishita Singh
 
 ## Core Idea
 
